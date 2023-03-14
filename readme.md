@@ -63,7 +63,7 @@ The callback gets as an argument the delta-time (The time since the last tick).
 lets make our circles rotate:
 ```
 let angle = 0
-circles.position.set(400,300); //set our Graphics container position to that of our middle circle
+circles.position.set(400,300); // set our Graphics container position to that of our middle circle
 circles.pivot.set(400,300); // set the origin of our container to be the same as our position
 
 // add the ticker
@@ -84,9 +84,9 @@ All of the above functions return a promise so you need to use either "async awa
 
 - `Assets.init({manifest})` / `Assets.addBundle(bundleId,assets)`:
   bundles allow you to load a bunch of assets in one go, but to load bundles you first have to give them an ID. Using `Assets.init` you can define all your bundles when the app starts or if you want to add bundles later you can use `addBundle`.
-  A `bundleId` can be any string you want.
-  `assets` is an object `{name1: resource, name2: resource2, ... }`
-  A `manifest` is an object or JSON file of the following structure:
+  A `bundleId` can be any string you want.\
+  `assets` is an object `{name1: resource, name2: resource2, ... }`\
+  A `manifest` is an object or JSON file of the following structure:\
   ```
   const manifest = {
 	  bundles: [
