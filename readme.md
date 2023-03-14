@@ -27,7 +27,7 @@ The main objects that can get rendered to the screen are:
 - `Text` - using any font and css style you want (expensive to change at runtime)
 - `BitmapText` - letters are taken from an image file (very cheap to change at runtime but can't be styled anyway you want).
 
-You can see the full list of `DisplayObject`s [here](https://pixijs.download/release/docs/PIXI.DisplayObject.html).
+You can see the full list of `DisplayObject`s [here](https://pixijs.download/release/docs/PIXI.DisplayObject.html).\
 *You can also see the properties and methods that all `DisplayObject`s share.
 
 If you nest objects within other objects their display properties become relative to the ones of their parents so for example:
@@ -48,13 +48,15 @@ circles.beginFill(0x0000ff);
 circles.drawCircle(500,300,35);
 app.stage.addChild(circles)
 ```
-a single Graphics object can make more than one shape.
+a single Graphics object can make more than one shape.\
 *a little note** - the `drawCircle` function we just used to create the circles doesn't actually draws them to the screen. Instead, think of it as a "buildCircle" function.
 The Graphics object has a few more of these "draw" functions and you should treat them all as "build" functions instead.
 So what actually draws them to the screen? that's what we talk about next.
 
 ### addChild(child)
-As you just saw, to add anything to the stage we just use the `app.stage.addChild` function. Actually that function is not special to the stage, it's a container function, and since all `DisplayObjects` extend the container class anytime you want to nest one object in another just use its `addChild` function.
+As you just saw, to add anything to the stage we just use the `app.stage.addChild` function and this is what made the circles appear on screen.\
+So when things get added to the stage, thats when they get rendered.\
+Also `addChild` is not special to the stage, it's a container function, and since all `DisplayObjects` extend the container class anytime you want to nest one object in another just use its `addChild` function.
 
 ### Basic animation
 To add basic animations to your display objects (changing their display properties over time) we use the 'Ticker' class.
@@ -83,10 +85,10 @@ use the Pixi 'Assets' class and its functions: `Assets.init({manifest})`, `Asset
 All of the above functions return a promise so you need to use either "async await" or the ".then" syntax.
 
 - `Assets.init({manifest})` / `Assets.addBundle(bundleId,assets)`:
-  bundles allow you to load a bunch of assets in one go, but to load bundles you first have to give them an ID. Using `Assets.init` you can define all your bundles when the app starts or if you want to add bundles later you can use `addBundle`.
+  bundles allow you to load a bunch of assets in one go, but to load bundles you first have to give them an ID. Using `Assets.init` you can define all your bundles when the app starts or if you want to add bundles later you can use `addBundle`.\
   A `bundleId` can be any string you want.\
   `assets` is an object `{name1: resource, name2: resource2, ... }`\
-  A `manifest` is an object or JSON file of the following structure:\
+  A `manifest` is an object or JSON file of the following structure:
   ```
   const manifest = {
 	  bundles: [
