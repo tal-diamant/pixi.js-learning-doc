@@ -56,12 +56,12 @@ So what actually draws them to the screen? that's what we talk about next.
 ### addChild(child)
 As you just saw, to add anything to the stage we just use the `app.stage.addChild` function and this is what made the circles appear on screen.\
 So when things get added to the stage, thats when they get rendered.\
-Also `addChild` is not special to the stage, it's a container function, and since all `DisplayObjects` extend the container class anytime you want to nest one object in another just use its `addChild` function.
+Also `addChild` is not special to the stage, it's a `Container` function, and since all `DisplayObjects` extend the `Container` class anytime you want to nest one object in another just use its `addChild` function.
 
 ### Basic animation
 To add basic animations to your display objects (changing their display properties over time) we use the 'Ticker' class.
 When you initialize a ticker instance you pass it a callback function that runs on every 'tick'. in that function you change the display properties of whatever DisplayObject you want.
-The callback gets as an argument the delta-time (The time since the last tick).
+The callback gets as an argument the "delta-time" (I'll expand on that in a bit).
 lets make our circles rotate:
 ```
 let angle = 0
@@ -73,6 +73,25 @@ app.ticker.add((delta) => {
 	angle = angle < 360? angle + 1: 0; //just to keep the number from climbing (if it will climb too high it can cause a crash)
 	circles.angle = angle; //update the angle of the container every tick.
 })
+```
+#### About delta-time
+delta-time is a misleading name, the actual value it holds is the number of frames
+that have passed since the last time the callback was invoked.\
+what? shouldn't the callback be invoked on every frame?\
+Yes! it should!, unfortunately, sometimes due technical issues or overload the
+GPU can't keep up with the screen's refresh rate and ends up missing a frame
+or more. To avoid your animations lagging behind you can multiply your update values by the delta argument.
+```
+app.ticker.add(delta => {
+  circle.angle += 1 * delta;
+})
+```
+usually it returns 1 or 0.99XX... which means no frames were skipped and it wouldn't change your update value. but in case some frames were skipped it will compensate for it by increasing your update value.
+
+#### About frame rate
+By default the ticker tries to match your screen's refresh rate, for some screens its 60 fps but for other screens this can go up to 120 fps, 144 fps and even 240 fps. This means that you might want to limit the ticker's maximum fps as otherwise people with higher refresh rate might experience your game at 2 or even 4 times the speed it's supposed to be played at. To do it all you need to do is:
+```
+app.ticker.maxFPS = 60;
 ```
 
 ### Preloading
@@ -91,34 +110,34 @@ All of the above functions return a promise so you need to use either "async awa
   A `manifest` is an object or JSON file of the following structure:
   ```
   const manifest = {
-	  bundles: [
-		  {
-			  name: "game-bundle",
-			  assets: [
-				  {
-					  name: "player",
-					  srcs: "player.png"
-				  },
-				  {
-					  name: "enemy",
-					  srcs: "enemy.png"
-				  },
-			  ]
-		  },
-		  {
-			  name: "bundle-2",
-			  assets: [
-				  {
-					  name: "loading-bar",
-					  srcs: "loadingbar.png"
-				  },
-				  {
-					  name: "loading-font",
-					  srcs: "loading.font"
-				  },
-			  ]
-		  }
-	  ]
+	bundles: [
+		{
+			name: "game-bundle",
+			assets: [
+				{
+					name: "player",
+					srcs: "player.png"
+				},
+				{
+					name: "enemy",
+					srcs: "enemy.png"
+				},
+			]
+		},
+		{
+			name: "bundle-2",
+			assets: [
+				{
+					name: "loading-bar",
+					srcs: "loadingbar.png"
+				},
+				{
+					name: "loading-font",
+					srcs: "loading.font"
+				},
+			]
+		}
+	]
   }
   ```
 
@@ -157,5 +176,72 @@ you can change the speed of the animation by assigning a value to the `animation
     const animation = new AnimatedSprite([PIXI.Texture.from('sprite1.png'), PIXI.Texture.from('sprite2.png')]);
     app.stage.addChild(animation);
     animation.play();
+
+### Containers
+Containers in PIXI are basically boxes to put other stuff in such as sprites, text, and graphics (basic shapes or composites). and they serve 3 main purposes:
+1. grouping
+2. masking
+3. filtering
+
+#### Grouping
+when you want a few elements to move or change appearance all together (like how a weapon sprite might move with the player sprite) you can nest them in a container using the `addChild` function we mentioned before and then make the changes to the container instead of each of them separately:
+```
+const manWithSword = new PIXI.Container()
+const man = new PIXI.Sprite.from('man.png');
+const sword = new PIXI.Sprite.from('sword.png');
+manWithSword.addChild(man, sword);
+manWithSword.x = 300;
+```
+Remember, children's "display properties" (properties that all display objects have) are relative to those of their parents so if the parent moves the children move with it.
+
+#### Masking
+To "mask" something in PIXI means to make it visible only through the mask it has put on. To illustrate, if I make a `Graphics` instance that renders a circle and I set it as the mask for a container with a sprite in it. I will only be able to see the sprite where the circle is overlapping the container.
+here is a somewhat more elaborate example:
+```
+// create the mask
+const  mask = new  PIXI.Graphics();
+mask.beginFill(0xffffff);
+mask.drawCircle(400, 300, 50);
+
+// create the container that will be masked
+const  maskedContainer = new  PIXI.Container();
+maskedContainer.mask = mask;
+
+// create some stuff to put in the container
+const  circles = new  PIXI.Graphics();
+circles.beginFill(0x0000ff);
+circles.drawCircle(400, 200, 35);
+circles.beginFill(0x00ff00);
+circles.drawCircle(300, 300, 35);
+circles.beginFill(0xff00ff);
+circles.drawCircle(500, 300, 35);
+circles.beginFill(0x00ffff);
+circles.drawCircle(400, 400, 35);
+
+// more stuff to put in the container (to make the difference more obvious)
+const  background = new  PIXI.Graphics();
+background.beginFill(0xaa2222);
+background.drawRect(0,0,app.screen.width,app.screen.height)
+
+// put the stuff in the container
+maskedContainer.addChild(background, circles);
+
+// add the container to the stage
+app.stage.addChild(maskedContainer);
+
+// animate the mask (to help illustrate)
+let  angle = 0;
+app.ticker.add(delta  => {
+  angle = (angle + 1 * delta) % 360;
+  const  radians = angle * Math.PI/180;
+
+  mask.clear();
+  mask.beginFill(0xffffff);
+  mask.drawCircle(400, 300, 100 + Math.cos(radians) * 34);
+})
+```
+
+#### Filtering
+...
 
 > Written with [StackEdit](https://stackedit.io/).
