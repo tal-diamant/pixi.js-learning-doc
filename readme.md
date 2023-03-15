@@ -108,38 +108,38 @@ All of the above functions return a promise so you need to use either "async awa
   A `bundleId` can be any string you want.\
   `assets` is an object `{name1: resource, name2: resource2, ... }`\
   A `manifest` is an object or JSON file of the following structure:
-  ```
-  const manifest = {
-	bundles: [
+```
+const manifest = {
+  bundles: [
+	{
+	  name: "game-bundle",
+	  assets: [
 		{
-			name: "game-bundle",
-			assets: [
-				{
-					name: "player",
-					srcs: "player.png"
-				},
-				{
-					name: "enemy",
-					srcs: "enemy.png"
-				},
-			]
+		  name: "player",
+		  srcs: "player.png"
 		},
 		{
-			name: "bundle-2",
-			assets: [
-				{
-					name: "loading-bar",
-					srcs: "loadingbar.png"
-				},
-				{
-					name: "loading-font",
-					srcs: "loading.font"
-				},
-			]
-		}
-	]
-  }
-  ```
+		  name: "enemy",
+		  srcs: "enemy.png"
+		},
+	  ]
+	},
+	{
+	  name: "bundle-2",
+	  assets: [
+		{
+		  name: "loading-bar",
+		  srcs: "loadingbar.png"
+		},
+		{
+		  name: "loading-font",
+		  srcs: "loading.font"
+		},
+	  ]
+	}
+  ]
+}
+```
 
 preloading example with `Assets.init()`:
 ```
