@@ -173,9 +173,11 @@ create an instance of the `AnimatedSprite` class with an array of textures
 in the order you want it to play.
 you can change the speed of the animation by assigning a value to the `animationSpeed` property (0 - 1).
 
-    const animation = new AnimatedSprite([PIXI.Texture.from('sprite1.png'), PIXI.Texture.from('sprite2.png')]);
-    app.stage.addChild(animation);
-    animation.play();
+```javascript
+const animation = new AnimatedSprite([PIXI.Texture.from('sprite1.png'), PIXI.Texture.from('sprite2.png')]);
+app.stage.addChild(animation);
+animation.play();
+```
 
 ### Containers
 Containers in PIXI are basically boxes to put other stuff in such as sprites, text, and graphics (basic shapes or composites). and they serve 3 main purposes:
@@ -284,6 +286,33 @@ const filter = new BloomFilter()
 ```
 To learn how to install the community filters check the repo I mentioned earlier [here](https://github.com/pixijs/filters) and go all the way to the bottom.
 
+### BaseTextures, Textures and Sprites
+You may have seen `Texture` appear in the above code here and there but I still didn't explain it, let's fix that now!\
+when dealing with images in pixi there are 4 things in play:
+1. the image file that contains all the data of the image
+2. the `BaseTexture` which takes all the data from the image file and loads it to the GPU
+3. the `Texture` which references all or a portion of the data from the `BaseTexture`
+4. the `Sprite` which is a `DisplayObject` that "wears" a `Texture` as its "face" and can move and be seen in the 'game world'/stage\
+
+Now you might be thinking to yourself (I know I did), why so complicated?
+In short, performance. In length, maybe later in this guide, but in case you don't really care why and just want to understand how (to use it), think about it this way:\
+The `BaseTexture` is a piece of paper with a drawing on it.\
+The `Texture` is a smaller piece of paper that we cut from the `BaseTexture`.\
+The `Sprite` is a piece of plastic that we stick the small piece of paper to.\
+Now we can use our piece of plastic with a picture stuck to it as a 'character' on our board game.\
+
+Thankfully, because this is all digital, we can cut as many small pieces of paper from the bigger piece as we want, even if we already cut that area before.\
+
+So now hopefully even if you don't understand the technical details underneath, you at least understand the relationship between all the parts of this system and why we use it like we do.\
+
+Ok, using the preloading techniques we used earlier is the best way to load images into your project, but if you want to be more quick and dirty (for example when prototyping or during development) you can use the following:\
+to load a single image to a sprite
+```javascript
+// when served through the internet this will cause a popin effect as
+// it takes time for the image to download to the browser then loaded into
+// the GPU
+const sprite = new PIXI.Sprite.from('image.png')
+```
 
 
 > Written with [StackEdit](https://stackedit.io/).
