@@ -14,7 +14,7 @@ At the top of the tree (the root node) you have the application container which 
 ### Stage
 to get a stage on screen just make sure you have access to the PIXI library through installation or the CDN `<script src="https://pixijs.download/releas/pixi.js"></script>`
 and then type or copy the following:
-```
+```javascript
 const app = PIXI.Application({width: 800, height:600, backgroundColor:0xaaaaaa});
 document.body.appendChild(app.view);
 ```
@@ -38,7 +38,7 @@ And so on...
 
 ### Put something on the stage
 Now that we have a stage setup let's add a Graphics object to the stage, say a circle/s?
-```
+```javascript
 const circles = new PIXI.Graphics()
 circles.beginFill(0x00ff00); // hex-color to fill the circle
 circles.drawCircle(400,300,50); // x, y, radius
@@ -63,7 +63,7 @@ To add basic animations to your display objects (changing their display properti
 When you initialize a ticker instance you pass it a callback function that runs on every 'tick'. in that function you change the display properties of whatever DisplayObject you want.
 The callback gets as an argument the "delta-time" (I'll expand on that in a bit).
 lets make our circles rotate:
-```
+```javascript
 let angle = 0
 circles.position.set(400,300); // set our Graphics container position to that of our middle circle
 circles.pivot.set(400,300); // set the origin of our container to be the same as our position
@@ -81,7 +81,7 @@ what? shouldn't the callback be invoked on every frame?\
 Yes! it should!, unfortunately, sometimes due technical issues or overload the
 GPU can't keep up with the screen's refresh rate and ends up missing a frame
 or more. To avoid your animations lagging behind you can multiply your update values by the delta argument.
-```
+```javascript
 app.ticker.add(delta => {
   circle.angle += 1 * delta;
 })
@@ -90,7 +90,7 @@ usually it returns 1 or 0.99XX... which means no frames were skipped and it woul
 
 #### About frame rate
 By default the ticker tries to match your screen's refresh rate, for some screens its 60 fps but for other screens this can go up to 120 fps, 144 fps and even 240 fps. This means that you might want to limit the ticker's maximum fps as otherwise people with higher refresh rate might experience your game at 2 or even 4 times the speed it's supposed to be played at. To do it all you need to do is:
-```
+```javascript
 app.ticker.maxFPS = 60;
 ```
 
@@ -108,7 +108,7 @@ All of the above functions return a promise so you need to use either "async awa
   A `bundleId` can be any string you want.\
   `assets` is an object `{name1: resource, name2: resource2, ... }`\
   A `manifest` is an object or JSON file of the following structure:
-```
+```javascript
 const manifest = {
   bundles: [
 	{
@@ -142,7 +142,7 @@ const manifest = {
 ```
 
 preloading example with `Assets.init()`:
-```
+```javascript
  const  app = new  PIXI.Application({
 	width:  800,
 	height:  600,
@@ -185,7 +185,7 @@ Containers in PIXI are basically boxes to put other stuff in such as sprites, te
 
 #### Grouping
 when you want a few elements to move or change appearance all together (like how a weapon sprite might move with the player sprite) you can nest them in a container using the `addChild` function we mentioned before and then make the changes to the container instead of each of them separately:
-```
+```javascript
 const manWithSword = new PIXI.Container()
 const man = new PIXI.Sprite.from('man.png');
 const sword = new PIXI.Sprite.from('sword.png');
@@ -197,7 +197,7 @@ Remember, children's "display properties" (properties that all display objects h
 #### Masking
 To "mask" something in PIXI means to make it visible only through the mask it has put on. To illustrate, if I make a `Graphics` instance that renders a circle and I set it as the mask for a container with a sprite in it. I will only be able to see the sprite where the circle is overlapping the container.
 here is a somewhat more elaborate example:
-```
+```javascript
 // create the mask
 const  mask = new  PIXI.Graphics();
 mask.beginFill(0xffffff);
@@ -242,6 +242,48 @@ app.ticker.add(delta  => {
 ```
 
 #### Filtering
-...
+Filters are special effects that can be applied to `DisplayObjects` like sprites and text. Filters can change the appearance of objects in many ways, for example by adding a blur effect, adjusting the color saturation and much more!\
+pixi has two types of filters: core filters and community filters. Core filters are included in the `PIXI` library and are maintained by the pixi team. Community filters are created by members of the pixi community.
+To see a list of all the available filters in pixi and live examples of them check out this [repo](https://github.com/pixijs/filters). It's really cool!\
+
+Note* - most of the filters in this list are community filters that are not part of the core `PIXI` library which means they need to be installed or downloaded separately.
+for the Built-in Filters list, just scroll to the end of the list and you'll see them.
+
+Let's see how to use a built-in filter (`BlurFilter`):
+```javascript
+// Create a filter instance
+const blurFilter = new PIXI.BlurFilter();
+
+// create something to blur
+const circle = new PIXI.Graphics();
+circle.beginFill(0x0000ff);
+circle.drawCircle(400,300,50);
+
+// create a container to applay the filter to
+const container = new PIXI.Container()
+
+// add the circle to the container
+container.addChild(circle);
+
+// apply the filter to the container
+container.filters = [blurFilter]; //this works for con
+
+// put the container on the stage
+app.stage.addChild(container);
+```
+Now every child of the container will have a blur filter applied to it.
+*You don't have to apply filters to containers, you can also apply them directly to other display objects (sprites, graphics, shapes, text, etc...)
+
+To use community filters is pretty much the same except you have to first install or download them and when you instantiate them you do it directly instead of through `PIXI` so instead of:
+```javascript
+const filter = new PIXI.BloomFilter()
+```
+you'll code:
+```javascript
+const filter = new BloomFilter()
+```
+To learn how to install the community filters check the repo I mentioned earlier [here](https://github.com/pixijs/filters) and go all the way to the bottom.
+
+
 
 > Written with [StackEdit](https://stackedit.io/).
