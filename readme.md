@@ -313,6 +313,83 @@ to load a single image to a sprite
 // the GPU
 const sprite = new PIXI.Sprite.from('image.png')
 ```
+Once you're done with your textures (you have no more need for them in your app) you should free up the memory they take:
+```javascript
+texture.destroy();
+```
+this removes references to the texture in your app and lets the garbage collector remove it from memory. When all textures of a `BaseTexture` have been destroyed the `BaseTexture` will also be removed from memory and from the GPU.
+
+### Graphics
+As we mentioned before `Graphics` in pixi is the name of an Object that lets you 'draw'/build simple shapes. A single `Graphics` instance can build one or more shapes that can be combined to create composites. here is a list of the shapes a `Graphics` object can build,\
+Built in shapes:
+-   Line - `lineTo(x,y)` (use `moveTo(x,y)` to where you want the line to start)
+-   Rectangle - `drawRect(x,y,width,height)`
+-   Round Rectangle - `drawRoundedRect(x,y,width,height,radius)`
+-   Circle - `drawCircle(x,y,radius)`
+-   Ellipse - `drawEllipse(x,y,width,height)`
+-   Polygon - `drawPolygon(…path)`
+-   Arc - `arc(cx, cy, radius, startAngle, endAngle, anticlockwise)`
+-   Bezier Curve - `bezierCurveTo(cpX, cpY, cpX2, cpY2, toX, toY)`
+-   Quadratic Curve - `quadraticCurveTo(cpX, cpY, toX, toY)`\
+
+Extra shapes that come with the `@pixi/graphics-extras` package:
+-   Torus - `drawTorus(this, x, y, innerRadius, outerRadius, startArc, endArc)`
+-   Chamfer Rectangle - `drawChamferRect(this, x, y, width, height, chamfer)`
+-   Fillet Rectangle - `drawFilletRect(this, x, y, width, height, fillet)`
+-   Regular Polygon - `drawRegularPolygon(this, x, y, radius, sides, rotation)`
+-   Rounded Polygon - `drawRoundedPolygon(this, x, y, radius, sides, corner, rotation)`
+-   Star - `drawStar(this, x, y, points, radius, innerRadius, rotation)`\
+
+As you may or may not noticed, the extra shapes all have a `this` as their first argument, that's because they are not built-in methods of the `Graphics` object.\
+You use them like this:
+```javascript
+import { drawStar } from "@pixi/graphics-extras";
+// create app and add to DOM ...
+
+// create a Graphics instance
+const graphics = new PIXI.Graphics();
+graphics.beginFill(0xffff00);
+// create the star in graphics
+drawStar(graphics, 400, 300, 5, 50, 30);
+
+// add graphics to the stage
+app.stage.addChild(graphics);
+```
+Note* - using the packages that are **not** built-in to pixi may not be as simple as installing and importing. When I was trying to use it I couldn't get it to work like that at all so I resorted to some very dirty solutions that I don't recommend anyone to use.
+Once I find a more straight forward solution I'll update this section but for now either avoid using them if they don't just work or try downloading the raw js files and importing from there but there might be cases you'll have to tinker with the package code yourself.
+
+#### Changing Graphics after creation
+To change the geometries (shapes) of a `Graphics` instance you have to use the `clear` method and then rebuild the shape/s the way you want it to be.
+```javascript
+const graphics = new PIXI.Graphics();
+graphics.beginFill(0x00ff00);
+graphics.drawCircle(400,300,50);
+
+app.stage.add(graphics);
+
+// then some event happnes and I want chnage the circle to be a square
+graphics.clear();
+graphics.beginFill(0x00ff00);
+graphics.drawRect(375,275,50,50);
+```
+You could also use this method Inside a ticker callback to create an animation but the pixi docs warn about performance that could arise from that. Instead, for shapes that need to be changed every frame, they recommend using the `PIXI.Mesh` class which requires some WebGL knowledge.
+
+#### Graphics performance
+The pixi docs advise you to not put too many shapes in one `Graphics` instance as it can hinder performance. Instead, they suggest that you create more `Graphics` instances and spread your shapes between them.\
+Also, you can create instances of the `Graphics` object by passing the geometry of another `Graphics` instance into their constructor, doing this will make both instances share the geometry of the first instance:
+```javascript
+// create the instance that will own the geometry
+const geometryOwner = new PIXI.Graphics();
+graphics.beginFill(0xffff00);
+graphics.drawCircle(400, 300, 50);
+
+// create the instance that will refrence the geometry
+const geometryUser = new PIXI.Graphics(geometryOwner.geometry);
+
+// the geometry object of both instances is the same one
+geometryOwner.geometry === geometryUser.geometry // true
+```
+Just make sure to call `geometryUser.destroy()` when you're done with it, otherwise the `geometry` object will not be garbage collected even if the geometryOwner is destroyed, causing a memory leak.
 
 
 > Written with [StackEdit](https://stackedit.io/).
