@@ -302,10 +302,11 @@ The `Sprite` is a piece of plastic that we stick the small piece of paper to.\
 Now we can use our piece of plastic with a picture stuck to it as a 'character' on our board game.\
 
 Thankfully, because this is all digital, we can cut as many small pieces of paper from the bigger piece as we want, even if we already cut that area before.\
+And in the same way we can also stick the small piece of paper to as many pieces of plasic as we want.\
 
 So now hopefully even if you don't understand the technical details underneath, you at least understand the relationship between all the parts of this system and why we use it like we do.\
 
-Ok, using the preloading techniques we used earlier is the best way to load images into your project, but if you want to be more quick and dirty (for example when prototyping or during development) you can use the following:\
+Ok, so using the preloading techniques we used earlier is the best way to load images into your project, but if you want to be more quick and dirty (for example when prototyping or during development) you can use the following:\
 to load a single image to a sprite
 ```javascript
 // when served through the internet this will cause a popin effect as
@@ -313,9 +314,18 @@ to load a single image to a sprite
 // the GPU
 const sprite = new PIXI.Sprite.from('image.png')
 ```
-Once you're done with your textures (you have no more need for them in your app) you should free up the memory they take:
+Once you're done with your sprites and textures (you have no more need for them in your app) you should free up the memory they take:
 ```javascript
+sprite.destroy();
 texture.destroy();
+baseTexture.destroy();
+
+// or alternatively
+sprite.destroy({
+	children: true, // destroy children if there are any [default is false]
+	texture: true, // destroy the texture the sprite has been using [default is false]
+	baseTexture: true, // destroy the baseTexture used by the sprite's texture [default is false]
+})
 ```
 this removes references to the texture in your app and lets the garbage collector remove it from memory. When all textures of a `BaseTexture` have been destroyed the `BaseTexture` will also be removed from memory and from the GPU.
 
@@ -390,6 +400,9 @@ const geometryUser = new PIXI.Graphics(geometryOwner.geometry);
 geometryOwner.geometry === geometryUser.geometry // true
 ```
 Just make sure to call `geometryUser.destroy()` when you're done with it, otherwise the `geometry` object will not be garbage collected even if the geometryOwner is destroyed, causing a memory leak.
+
+### Particle effects
+coming soon...
 
 
 > Written with [StackEdit](https://stackedit.io/).
