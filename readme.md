@@ -382,7 +382,7 @@ graphics.clear();
 graphics.beginFill(0x00ff00);
 graphics.drawRect(375,275,50,50);
 ```
-You could also use this method Inside a ticker callback to create an animation but the pixi docs warn about performance that could arise from that. Instead, for shapes that need to be changed every frame, they recommend using the `PIXI.Mesh` class which requires some WebGL knowledge.
+You could also use this method Inside a ticker callback to create an animation but the pixi docs warn about performance issues that could arise from that. Instead, for shapes that need to be changed every frame, they recommend using the `PIXI.Mesh` class which requires some WebGL knowledge (this will be covered later).
 
 #### Graphics performance
 The pixi docs advise you to not put too many shapes in one `Graphics` instance as it can hinder performance. Instead, they suggest that you create more `Graphics` instances and spread your shapes between them.\
@@ -402,7 +402,46 @@ geometryOwner.geometry === geometryUser.geometry // true
 Just make sure to call `geometryUser.destroy()` when you're done with it, otherwise the `geometry` object will not be garbage collected even if the geometryOwner is destroyed, causing a memory leak.
 
 ### Particle effects
-coming soon...
+To use particles in pixi we'll use the `ParticleContainer` class, it is basically a regular `Container` but with some limitations which makes it more performant (more on the limitations later).\
+Using particles can feel very complicated but I'll show you it's not too bad.\
+pixi has an online particle editor that you can play with and customize your particles.\
+Once you are happy with the particles you can download a JSON config file which we'll feed into the particle emitter to replicate the effect on our project.
+[Particle editor](https://pixijs.io/pixi-particles-editor/).\
+Note* that the particle is using an image, you can see it and download it in the "particle properties" section of the editor, or you can upload and use your own.\
+Note** the particle editor generates an old version of the emitter configuration but don't worry, they made a function that accepts that old configuration and converts it to the new one so don't get confused when you see it.\
+
+The first step to be able to use particles is to install the `@pixi/particle-emitter` package.
+```
+npm i @pixi/particle-emitter
+```
+with the package installed go through the following steps: 
+1. download the particle JSON file from the online editor
+2. download the particle image from the online editor (if you didn't use your own)
+3. add the image file to your public folder - `puclic/images/particle.png`
+4. change the JSON file to .js or .ts (whatever you are using) and export the JSON object
+```javascript
+// src/data/emitter.js
+
+export const emitterConfig = {
+ // json data
+}
+```
+5. import all the things we need and use the emitter in the project
+```javascript
+// src/app.js
+
+import { Emitter, upgradeConfig } from  "@pixi/particle-emitter";
+import { emitterConfig } from  "./data/emitter";
+
+const  particleContainer = new  PIXI.ParticleContainer();
+const  emitter = new  Emitter(particleContainer,upgradeConfig(emitterConfig,"images/particle.png"));
+emitter.autoUpdate = true; // you can have that flase but then you need to control the timings of emittion
+emitter.updateSpawnPos(400, 300); // the position of the emitter
+emitter.emit = true; // a switch to stop and start emittion
+app.stage.addChild(particleContainer);
+```
+That's it, it should be working now.
+Regarding the limitations of the `ParticleContainer` it cannot be masked or have filters applied to it and some more advanced features won't work with it. I would tell you exactly what these features are but the documentation is quite vague about it so I have no idea.
 
 
 > Written with [StackEdit](https://stackedit.io/).
