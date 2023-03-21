@@ -207,7 +207,7 @@ document.body.appendChild(app.view);
 		 // the code in here will run only once our bundle has loaded.
 		 
 		 console.log(loaded_resources) // { player: Texture, enemy: Texture }
-		 //The loader function made Texture objects out of our .png files.
+		 //The loadBundle function made Texture objects out of our .png files.
 	 
 		 //we can now safely add our sprites to the stage knowing they won't
 		 // cause any problems
@@ -498,6 +498,93 @@ Regarding the limitations of the `ParticleContainer` it cannot be masked or have
 
 Be aware that if you go too far with the effects (too many particles or complicated behavior) it can significantly hurt performance so don't overdo it.
 
+### Sprite sheets
+- what are they?
+- how you create them?
+- how you use them?
+
+#### What are sprite sheets and why should I use them?
+Sprite sheets are basically just a bunch of individual images bunched up into one image file.\
+The benefits of this is faster initial load time for your project and better batch rendering at runtime.\
+The initial load time improvement is due to less requests to the server as you only need one file instead of many. This benefit becomes more obvious the more images you have.
+The improvement in batch rendering helps WebGL draw our sprites faster and is due to all of our sprites coming from a single `BaseTexture`.
+
+#### How do I create them?
+You may think or want to create sprite sheets manually by yourself but you don't need to! and it's better that you don't!\
+You see, putting a bunch of images in a file is nice but you then need to also map each sprite to its location on the image and you need to do it in a JSON structure that the pixi spritesheet parser can understand. 
+Well instead of doing all that, if you have a bunch of individual images you want to turn into a sprite sheet you can use a spritesheet packer such as one of these:\
+[sprite sheet packer](https://www.codeandweb.com/free-sprite-sheet-packer), [Shoebox](https://renderhjs.net/shoebox/), [spritesheet.js](https://github.com/krzysztof-o/spritesheet.js).\
+These packers will take your images and arrange them in a single file and they'll also generate the JSON file with all the information about each image's location and other meta data. You just need to download the generated image file (the sprite sheet) and the json that hold all the meta data and load them to your project.
+
+#### How to use sprite sheets in Pixi
+You can do it in 2 ways:\
+using the `Assets` class:
+```javascript
+import { Assets } from 'pixi.js';
+const sheet = await Assets.load('images/spritesheet.json');
+```
+or directly with the `Spritesheet` class:
+```javascript
+import { Spritesheet } from 'pixi.js';
+
+// texture - needs to be a Texture or BaseTexture object
+// spritesheetData - is the json file or js object with the meta data
+const sheet = new Spritesheet(texture, spritesheetData);
+await sheet.parse(); //<-- notice it returns a promise
+console.log('Spritesheet ready to use!');
+```
+Note* - both ways are asynchronous!\
+With the `sheet.textures` you can create Sprite objects, and with `sheet.animations` you can create an `AnimatedSprite`:
+```javascript
+sheet.parse()
+.then(parsedSheet) {
+  const sprite = new PIXI.Sprite(parsedSheet.textureName);
+  const animation = new PIXI.AnimatedSprite(parsedSheet.animations.animationName);
+  animation.animationSpeed = 0.05; // speed in seconds
+  app.stage.addChild(animation, sprite);
+  animation.play();
+}
+```
+Sprite sheets can define animations, anchors for each individual sprite and more, here is an example of what a spritesheet.json can look like:
+```json
+{
+    "frames": {
+        "enemy1.png":
+        {
+            "frame": {"x":103,"y":1,"w":32,"h":32},
+            "spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+            "sourceSize": {"w":32,"h":32},
+            "anchor": {"x":16,"y":16}
+        },
+        "enemy2.png":
+        {
+            "frame": {"x":103,"y":35,"w":32,"h":32},
+            "spriteSourceSize": {"x":0,"y":0,"w":32,"h":32},
+            "sourceSize": {"w":32,"h":32},
+            "anchor": {"x":16,"y":16}
+        },
+        "button.png":
+        {
+            "frame": {"x":1,"y":1,"w":100,"h":100},
+            "spriteSourceSize": {"x":0,"y":0,"w":100,"h":100},
+            "sourceSize": {"w":100,"h":100},
+            "anchor": {"x":0,"y":0},
+            "borders": {"left":35,"top":35,"right":35,"bottom":35}
+        }
+    },
+
+    "animations": {
+        "enemy": ["enemy1.png","enemy2.png"]
+    },
+
+    "meta": {
+        "image": "sheet.png",
+        "format": "RGBA8888",
+        "size": {"w":136,"h":102},
+        "scale": "1"
+    }
+}
+```
 
 
-> Written with [StackEdit](https://stackedit.io/).
+> Written partly with [StackEdit](https://stackedit.io/).
