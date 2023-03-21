@@ -536,14 +536,12 @@ console.log('Spritesheet ready to use!');
 Note* - both ways are asynchronous!\
 With the `sheet.textures` you can create Sprite objects, and with `sheet.animations` you can create an `AnimatedSprite`:
 ```javascript
-sheet.parse()
-.then(parsedSheet) {
-  const sprite = new PIXI.Sprite(parsedSheet.textureName);
-  const animation = new PIXI.AnimatedSprite(parsedSheet.animations.animationName);
-  animation.animationSpeed = 0.05; // speed in seconds
-  app.stage.addChild(animation, sprite);
-  animation.play();
-}
+await sheet.parse() // assume this is called inside an async function
+const sprite = new PIXI.Sprite(sheet.textures.textureName);
+const animation = new PIXI.AnimatedSprite(sheet.animations.animationName);
+animation.animationSpeed = 0.05; // speed in seconds
+app.stage.addChild(animation, sprite);
+animation.play();
 ```
 Sprite sheets can define animations, anchors for each individual sprite and more, here is an example of what a spritesheet.json can look like:
 ```json
