@@ -543,7 +543,7 @@ animation.animationSpeed = 0.05; // speed in seconds
 app.stage.addChild(animation, sprite);
 animation.play();
 ```
-Sprite sheets can define animations, anchors for each individual sprite and more, here is an example of what a spritesheet.json can look like:
+Sprite sheets can define animations, anchors for each individual sprite and more, here is an example of what a `spritesheet.json` can look like:
 ```json
 {
     "frames": {
@@ -583,6 +583,29 @@ Sprite sheets can define animations, anchors for each individual sprite and more
     }
 }
 ```
+
+### Text
+There are two kinds of text in Pixi:
+- `Text`
+- `BitmapText`
+
+in short:\
+`Text` - Good for dynamically styled text that doesn't change too often.
+`BitmapText` - Good for statically styled text that needs to be changed very frequently.
+
+in length:\
+`Text` - is basically taking the browsers vector text and rasterizing it. once rasterized it is just like a `Sprite`. Because of the rasterizing regenerating `Text` when change is a somewhat expensive procedure, that is why it is not meant to change too often.
+That being said, don't be afraid to change `Text`, just know that if you change a few `Text` instances every frame it can definitely cause performance issues.\
+Font needs to be loaded by the browser before you start using it, so you need to ensure the font is loaded otherwise the browser can default to another font instead. there are libraries that ensure font loading such as [FontFaceObserver](https://fontfaceobserver.com/).\
+You don't need to work too hard to design your font, there is an online text stylizer you can use to design your text style then just copy the generated json and/or javascript to use in your project, check it out [here](https://pixijs.io/pixi-text-style/#).
+Finally, be careful when up-scaling `Text`, if you go past 1 your font will start to get pixelated. a solution for this could be making the default style as big as you need it to get and then scaling it down to the other sizes you need.
+
+`BitmapText` - this type of text is basically generated from a sprite sheet of all the letters and symbols you are going to use. Because it is an image you cannot change it's style during runtime but the advantage of it is that it's much faster. This is a very good option if you need a lot of changing text on the screen at once and dynamic styling is less important to you.\
+You can create a `BitmapText` with 3rd party tools and the `BitmapFont` class.
+An online tool I found is this: [Snowb](https://snowb.org/).\
+But you know or are using another tool I think it would be just fine.\
+--need to add code examples--
+
 
 
 > Written partly with [StackEdit](https://stackedit.io/).
