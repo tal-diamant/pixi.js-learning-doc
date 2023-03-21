@@ -318,7 +318,7 @@ const container = new PIXI.Container()
 container.addChild(circle);
 
 // apply the filter to the container
-container.filters = [blurFilter]; //this works for con
+container.filters = [blurFilter];
 
 // put the container on the stage
 app.stage.addChild(container);
@@ -393,30 +393,33 @@ Built in shapes:
 -   Quadratic Curve - `quadraticCurveTo(cpX, cpY, toX, toY)`\
 
 Extra shapes that come with the `@pixi/graphics-extras` package:
--   Torus - `drawTorus(this, x, y, innerRadius, outerRadius, startArc, endArc)`
--   Chamfer Rectangle - `drawChamferRect(this, x, y, width, height, chamfer)`
--   Fillet Rectangle - `drawFilletRect(this, x, y, width, height, fillet)`
--   Regular Polygon - `drawRegularPolygon(this, x, y, radius, sides, rotation)`
--   Rounded Polygon - `drawRoundedPolygon(this, x, y, radius, sides, corner, rotation)`
--   Star - `drawStar(this, x, y, points, radius, innerRadius, rotation)`\
+-   Torus - `drawTorus(x, y, innerRadius, outerRadius, startArc, endArc)`
+-   Chamfer Rectangle - `drawChamferRect(x, y, width, height, chamfer)`
+-   Fillet Rectangle - `drawFilletRect(x, y, width, height, fillet)`
+-   Regular Polygon - `drawRegularPolygon(x, y, radius, sides, rotation)`
+-   Rounded Polygon - `drawRoundedPolygon(x, y, radius, sides, corner, rotation)`
+-   Star - `drawStar(x, y, points, radius, innerRadius, rotation)`\
 
-As you may or may not noticed, the extra shapes all have a `this` as their first argument, that's because they are not built-in methods of the `Graphics` object.\
-You use them like this:
+You use the extra graphics exactly like you would the built-in graphics except you have to add an import of the `@pixi/graphics-extras`:
 ```javascript
-import { drawStar } from "@pixi/graphics-extras";
-// create app and add to DOM ...
+import * as PIXI from "pixi.js";
+import "@pixi/graphics-extras"; // <-- add extras import
+
+// const app = new PIXI.Applic...
 
 // create a Graphics instance
 const graphics = new PIXI.Graphics();
 graphics.beginFill(0xffff00);
+
 // create the star in graphics
-drawStar(graphics, 400, 300, 5, 50, 30);
+graphics.drawStar(400, 300, 5, 50, 30) // <-- use extras like built-in graphics
 
 // add graphics to the stage
 app.stage.addChild(graphics);
 ```
-Note* - using the packages that are **not** built-in to pixi may not be as simple as installing and importing. When I was trying to use it I couldn't get it to work like that at all so I resorted to some very dirty solutions that I don't recommend anyone to use.
-Once I find a more straight forward solution I'll update this section but for now either avoid using them if they don't just work or try downloading the raw js files and importing from there but there might be cases you'll have to tinker with the package code yourself.
+Note* - the draw functions in the `@pixi/graphics-extras` package can cause trouble with TypeScript, you can try to fix it yourself or use the hacky way I used:\
+`graphics.drawStar ? graphics.drawStar(400, 300, 5, 50, 30) : null;`\
+Note* - If you are not using a modern build tool (such as vite or webpack) the Pixi packages that are not built-in to Pixi can cause a lot of trouble.
 
 #### Changing Graphics after creation
 To change the geometries (shapes) of a `Graphics` instance you have to use the `clear` method and then rebuild the shape/s the way you want it to be.
@@ -440,8 +443,8 @@ Also, you can create instances of the `Graphics` object by passing the geometry 
 ```javascript
 // create the instance that will own the geometry
 const geometryOwner = new PIXI.Graphics();
-graphics.beginFill(0xffff00);
-graphics.drawCircle(400, 300, 50);
+geometryOwner.beginFill(0xffff00);
+geometryOwner.drawCircle(400, 300, 50);
 
 // create the instance that will refrence the geometry
 const geometryUser = new PIXI.Graphics(geometryOwner.geometry);
