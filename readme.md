@@ -11,13 +11,63 @@ Pixi.js is supposed to be easier and more performant.
 Pixi.js is basically a tree of objects. The pixi people are calling the tree a "scene graph" and the objects "containers".
 At the top of the tree (the root node) you have the application container which they call a "Stage".
 
+### Getting started
+Pixi is divided to core and extra packages, to make sure we can use them all with the least amount of headache we need to use a modern buildtool, we'll be using vite.\
+Create a vite app, choose whatever framework you want in the prompts, I'll be using React (if you're using a framework other than React or Vanilla JS you'll have to figure where to put the pixi code yourself).
+```
+npm create vite@latest
+or
+yarn create vite
+or
+pnpm create vite
+```
+*using a buildtool prevents a lot of headache dealing with the pixi extra packages.
+
 ### Stage
-to get a stage on screen just make sure you have access to the PIXI library through installation or the CDN `<script src="https://pixijs.download/releas/pixi.js"></script>`
-and then type or copy the following:
+to get a stage on screen just make sure you have access to the PIXI library through installation:
 ```javascript
-const app = PIXI.Application({width: 800, height:600, backgroundColor:0xaaaaaa});
+npm i pixi.js
+```
+ or the CDN `<script src="https://pixijs.download/releas/pixi.js"></script>`
+and then type or copy the following:\
+**react**
+```javascript
+/*
+for the rest of this guide I'll assume usage of this template for react and just write the PIXI code.
+*/
+import { useEffect, useState, useRef } from "react";
+import * as PIXI from "pixi.js";
+
+export default function App() {
+  const [pixiApp, setPixiApp] = useState(null);
+  const appDiv = useRef(null);
+
+  useEffect(() => {
+    if (!pixiApp && appDiv.current) {
+      // PIXI CODE GOES HERE
+
+      const app = new PIXI.Application({width: 800,height: 600,});
+      appDiv.current.appendChild(app.view);
+
+      // PIXI CODE ENDS HERE
+
+	  setPixiApp(app);
+    }
+    return () => {
+      pixiApp?.destroy(true, true);
+      setPixiApp(null);
+    };
+  }, []);
+
+  return <div ref={appDiv}></div>;
+}
+```
+**vanilla js**
+```javascript
+const app = PIXI.Application({width: 800, height:600});
 document.body.appendChild(app.view);
 ```
+You should see a black box apear on your screen.\
 
 Any descendant of the stage which is a `DisplayObject` is what will get rendered to the screen.
 The main objects that can get rendered to the screen are:
@@ -404,8 +454,8 @@ Just make sure to call `geometryUser.destroy()` when you're done with it, otherw
 ### Particle effects
 To use particles in pixi we'll use the `ParticleContainer` class, it is basically a regular `Container` but with some limitations which makes it more performant (more on the limitations later).\
 Using particles can feel very complicated but I'll show you it's not too bad.\
-pixi has an online particle editor that you can play with and customize your particles.\
-Once you are happy with the particles you can download a JSON config file which we'll feed into the particle emitter to replicate the effect on our project.
+pixi has an online particle editor that you can play with and use to customize your particles.\
+Once you are happy with the particles, you can download a JSON config file which we'll feed into the particle emitter to replicate the effect in our project.\
 [Particle editor](https://pixijs.io/pixi-particles-editor/).\
 Note* that the particle is using an image, you can see it and download it in the "particle properties" section of the editor, or you can upload and use your own.\
 Note** the particle editor generates an old version of the emitter configuration but don't worry, they made a function that accepts that old configuration and converts it to the new one so don't get confused when you see it.\
@@ -440,8 +490,11 @@ emitter.updateSpawnPos(400, 300); // the position of the emitter
 emitter.emit = true; // a switch to stop and start emittion
 app.stage.addChild(particleContainer);
 ```
-That's it, it should be working now.
+That's it, it should be working now.\
 Regarding the limitations of the `ParticleContainer` it cannot be masked or have filters applied to it and some more advanced features won't work with it. I would tell you exactly what these features are but the documentation is quite vague about it so I have no idea.
+
+Be aware that if you go too far with the effects (too many particles or complicated behavior) it can significantly hurt performance so don't overdo it.
+
 
 
 > Written with [StackEdit](https://stackedit.io/).
