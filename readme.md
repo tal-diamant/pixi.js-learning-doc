@@ -584,27 +584,127 @@ Sprite sheets can define animations, anchors for each individual sprite and more
 }
 ```
 
-### Text
+### Text & BitmapText
 There are two kinds of text in Pixi:
-- `Text`
-- `BitmapText`
+
+-  `Text`
+-  `BitmapText`
 
 in short:\
-`Text` - Good for dynamically styled text that doesn't change too often.
+`Text` - Good for dynamically styled text that doesn't change too often.\
 `BitmapText` - Good for statically styled text that needs to be changed very frequently.
 
-in length:\
-`Text` - is basically taking the browsers vector text and rasterizing it. once rasterized it is just like a `Sprite`. Because of the rasterizing regenerating `Text` when change is a somewhat expensive procedure, that is why it is not meant to change too often.
-That being said, don't be afraid to change `Text`, just know that if you change a few `Text` instances every frame it can definitely cause performance issues.\
-Font needs to be loaded by the browser before you start using it, so you need to ensure the font is loaded otherwise the browser can default to another font instead. there are libraries that ensure font loading such as [FontFaceObserver](https://fontfaceobserver.com/).\
-You don't need to work too hard to design your font, there is an online text stylizer you can use to design your text style then just copy the generated json and/or javascript to use in your project, check it out [here](https://pixijs.io/pixi-text-style/#).
-Finally, be careful when up-scaling `Text`, if you go past 1 your font will start to get pixelated. a solution for this could be making the default style as big as you need it to get and then scaling it down to the other sizes you need.
+in length:
+#### `Text` - performance
+`Text` - is basically taking the browser's normal text rendering and rasterizes it (turning vector data into pixel data) into an image. once rasterized it acts like a `Sprite`, meaning you can scale, rotate, position and tint it as you like. Because of the rasterizing, changing the text (content or style) is a somewhat expensive procedure, that is why it is not meant to change often.\
+That being said, don't be afraid to change `Text`, You can possibly get away with changing one `Text` object every frame but if you try to do it with a few at once you'll likely get performance issues.\
+Test your project and see what's your limit, and take in consideration that your users might have weaker machines than yours.
 
-`BitmapText` - this type of text is basically generated from a sprite sheet of all the letters and symbols you are going to use. Because it is an image you cannot change it's style during runtime but the advantage of it is that it's much faster. This is a very good option if you need a lot of changing text on the screen at once and dynamic styling is less important to you.\
-You can create a `BitmapText` with 3rd party tools and the `BitmapFont` class.
-An online tool I found is this: [Snowb](https://snowb.org/).\
-But you know or are using another tool I think it would be just fine.\
---need to add code examples--
+#### `Text` - preloading
+Because `Text` is using the browser's normal text rendering you could encounter a situation where the font you defined is not being applied to your `Text`. That's because fonts need to be loaded and if the browser is ready to display text on the screen before the font is loaded it will default to a different font until the font loading is done. Because `Text` is rasterized into an image it won't change along with the browser's normal text rendering once the font is loaded and you'll get stuck with the default font (unless you re-generate your `Text` after the font loads, but that will cause it to pop-in which is not an ideal user experience).\
+To ensure the font is loaded you'll need to use a 3rd party library such as [FontFaceObserver](https://fontfaceobserver.com/).\
+Unfortunately, Pixi's `Assets` class is not able to do it for us.
+
+#### `Text` - creation & usage
+If you want to visually style your font you can use an online tool that will both style it and generate the necessary code for you to supply Pixi with.\
+here is the tool: [pixi-text-style](https://pixijs.io/pixi-text-style/#).
+Once you're done styling just copy/download the generated JSON or JavaScript to your project.\
+using JSON
+```javascript
+import  textStyle  from  "./textStyle.json";
+
+const  text = new  PIXI.Text('Styled text content', textStyle);
+text.position.set(app.screen.width / 2 - text.width / 2, 30);
+app.stage.addChild(text);
+```
+using JavaScript
+```javascript
+// textStyle.js
+export const textStyle = {
+	// styles copied from pixi-text-style online tool
+}
+
+// App.js
+import  { textStyle }  from  "./textStyle.js";
+
+const  text = new  PIXI.Text('Styled text content', textStyle);
+text.position.set(app.screen.width / 2 - text.width / 2, 30);
+app.stage.addChild(text);
+```
+
+#### `Text` - change text
+to change the text content of a `Text` after it has been instantiated:
+```javascript
+textInstance.text = 'new text';
+```
+
+#### `Text` - final notes
+Changing the regular display properties of `Text` (position, scale, rotation, etc... ) does not regenerate the text so don't worry about using those.\
+One thing to note though is that scaling `Text` up past its default style-size (scale > 1) will cause it to get pixely/blurry. A solution for this could be making the default style as big as you need it to get and then scaling it down to the other sizes you need. It takes more memory but your text will maintain a clean look.
+
+  
+#### `BitmapText` - general info
+`BitmapText` - this type of text is basically generated from a sprite sheet of all the letters and symbols you are going to use so unlike `Text` it does not need to go through rasterizing. Because of this, changing the text content is much faster so this is a very good option if you need a lot of changing text at once. Of course, because it is an image you cannot change its style without editing/changing the image.\
+I still need to test this one but seems like another benefit `BitmapText` has is that unlike `Text` it does not need to wait for a font to load, you just need to pre-load its image and meta data with the `Assets` class.
+
+#### `BitmapText` - creation & usage
+To create a `BitmapText` you don't need to create a spritesheet, in this case pixi makes our lives easier. To style your `BitmapText` you can once again use the online tool [pixi-text-style](https://pixijs.io/pixi-text-style/#) just like we did with `Text` and get the JavaScript or JSON files to use in your project. then in your code just do:
+```javascript
+import textStyle from "./textStyle.json";
+
+// create a bitmap font
+PIXI.BitmapFont.from('myFont', textStyle);
+
+// create the BitmapText object with your text and the font we just created
+const  text = new  PIXI.BitmapText('My styled BitmapText', {fontName:  'myFont'});
+
+// center the font on the screen
+text.position.set(app.screen.width / 2 - text.width / 2, app.screen.height / 2);
+
+app.stage.addChild(text)
+```
+If you want to create a custom font `BitmapText` you can do so with 3rd party tools such as: [Snowb](https://snowb.org/).\
+To use Snowb go to their [online tool](https://snowb.org/) and use their default font or upload your own then design it however you want. Once done click the export button and it will give you the option to name your font and save it in a few different formats.\
+Choose the "`fileName.txt (BMFont TEXT)`" format and make sure to **remember the name** you give the **font**. This name is what you need to pass to the `BitmapText` constructor. The Pixi docs say that you can also use a `.xml` file (instead of the `.txt` we're using) but I couldn't get it to work.\
+Now that you chose the right format and you remember the font name, you can save the export (should download as a `.zip` file) .\
+Inside you'll find a `.txt` with the meta data and a `.png` image spritesheet, add them both to your project files.\
+The last thing we need before using it in the project is to convert the `.txt` to a `.js` and export its entire contents as a single `string`.
+```javascript
+rename yourFileName.txt -> yourFileName.js
+
+// then inside yourFileName.js wrap the entire text with backticks 
+// and export it
+export const fontData = `
+ file contents...
+`
+```
+Finally, we can now use our custom font like this:
+```javascript
+import { fontData } from "./yourFileName.js";
+
+// create a texture from the font spritesheet
+const  fontTexture = PIXI.Texture.from('images/yourFileName.png')
+
+// this adds the font to the available fonts list under font-name you gave when you exported it
+PIXI.BitmapFont.install(fontData,fontTexture);
+
+// create the actual BitmapText instance that will apear on screen
+const  customFontText = new  PIXI.BitmapText('My custom BitmapText', {fontName:  'theFontNameThatYouRemember'});
+
+// center the font on the screen
+customFontText.position.set(app.screen.width / 2 - customFontText.width / 2, app.screen.height / 2 - customFontText.height / 2);
+
+app.stage.addChild(customFontText)
+```
+
+#### `BitmapText` - change text
+to change the text content of a `BitmapText` after it has been instantiated:
+```javascript
+bitmapTextInstance.text = 'new text';
+```
+
+#### `BitmapText` - notes
+- I didn't test this but I think you could use custom fonts using the simpler builtin pixi way, the thing to note about it is that you'll need to ensure your font loads like in the case of using custom fonts with `Text`.
 
 
 
