@@ -12,6 +12,7 @@ Pixi.js is basically a tree of objects. The pixi people are calling the tree a "
 At the top of the tree (the root node) you have the application container which they call a "Stage".
 
 ### Getting started
+This guide will cover usage of Pixi v7.2.1\
 Pixi is divided to core and extra packages, to make sure we can use them all with the least amount of headache we need to use a modern buildtool, we'll be using vite.\
 Create a vite app, choose whatever framework you want in the prompts, I'll be using React (if you're using a framework other than React or Vanilla JS you'll have to figure where to put the pixi code yourself).
 ```
@@ -682,7 +683,7 @@ Finally, we can now use our custom font like this:
 ```javascript
 import { fontData } from "./yourFileName.js";
 
-// create a texture from the font spritesheet
+// create a texture from the font spritesheet (in production use PIXI.Assets.load('path/to/file.png') and remember it returns a Promise) 
 const  fontTexture = PIXI.Texture.from('images/yourFileName.png')
 
 // this adds the font to the available fonts list under font-name you gave when you exported it
@@ -706,6 +707,72 @@ bitmapTextInstance.text = 'new text';
 #### `BitmapText` - notes
 - I didn't test this but I think you could use custom fonts using the simpler builtin pixi way, the thing to note about it is that you'll need to ensure your font loads like in the case of using custom fonts with `Text`.
 
+### Audio
+playing sounds in pixi is actually surprisingly easy!
+```javascript
+npm i @pixi/sound
+```
+then
+```javascript
+import { sound } from "@pixi/sound";
+
+// add sound to list of sounds available and give it a name
+sound.add('soundName', 'path/to/sound.mp3');
+
+// play the sound using the name you gave it
+sound.play('soundName')
+```
+The example above works but it doesn't preloads your sound. But preloading is also very easy:
+```javascript
+import { sound } from "@pixi/sound";
+
+// add sound with a name, pass an options object with preload: true
+sound.add('soundName', {
+  url: 'path/to/sound.mp3',
+  preload: true,
+  loaded: (err, sound) => {
+    // code to run when loaded
+    sound.volume = 0.5;
+    sound.play();
+  }
+});
+
+// button to play the sound
+const button = new PIXI.Graphics()
+button.beginFill(0x0000ff);
+button.drawRect(350,275,100,50);
+button.interactive = true;
+button.on('pointerdown', () => {
+  sound.play('soundName', {
+    volume: 0.7,
+    start: 2, // start playing from 2 seconds from the begining of the track
+    end: 5 // stops playing 5 seconds from the begining of the track
+  });
+})
+
+app.stage.addChild(button);
+```
+a list of sound properties you can change (there are more):
+
+- volume: number - volume (1 is max)
+- loop: boolean - should the sound loop
+- filters: Filter[] - filters applied to the sound
+- speed: number - playback speed (1 is normal)
+- muted: boolean - mute state
+- paused: boolean - paused state
+- singleInstance: boolean - `true` to disallow playing multiple layered instances at once.
+- url: string - path to sound file
+
+There's actually a lot more that can be done with sounds such as:
+
+- sound sprites - like spritesheets but for audio!
+- adding all kinds of filters/effects
+- audio events - calling functions at specific progression points of the track
+- using fallback sound formats (for devices/browsers that don't support one)
+- utilities
+- streaming
+
+but we won't get into these now.
 
 
 > Written partly with [StackEdit](https://stackedit.io/).
